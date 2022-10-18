@@ -69,7 +69,6 @@ def main(user, psw):
     print("Email enviado")
 
 if __name__ == '__main__':
-    
     USER = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
     PSW = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
