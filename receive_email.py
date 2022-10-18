@@ -49,7 +49,7 @@ def get_email_id_list(receive_server):
     mail_ids = [block.split() for block in data].pop(0)
 
     #The fetch_data return a list with tuple with header and content
-    fetch_data = [receive_server.fetch(idx,'(RFC822)')[1] for idx in mail_ids]
+    fetch_data = [receive_server.fetch(idx,'(RFC822)')[1] for idx in mail_ids].pop(0)
 
     return fetch_data
 
@@ -61,11 +61,18 @@ def extract_multipart_text(message):
     """
     mail_content = ''
     for part in message.get_payload():
-        if part.get_content_type == 'text/plain':
+        if part.get_content_type() == 'text/plain':
             mail_content += part.get_payload()
     return mail_content
 
 def main(user, psw):
+    """
+    It connects to the email server, selects the inbox, gets the email id list
+    loops through the list,
+    and then deletes the email.
+    :param user: The email address you want to check
+    :param psw: your password
+    """
 
     email_server = create_email_server(user, psw)
     email_server.select('EasyMeetingAnswer')
@@ -74,7 +81,10 @@ def main(user, psw):
     fetch_data = get_email_id_list(email_server)
 
     #Loop throught the list of tuples that contains the email content
-    for response_part in fetch_data:
+    for email_id, response_part in enumerate(fetch_data):
+
+        print(type(response_part))
+
         if isinstance(response_part, tuple):
 
             #Extract the content message
@@ -94,6 +104,9 @@ def main(user, psw):
             print(f'From: {email_sender}')
             print(f'Subject: {email_subject}')
             print(f'Content: {mail_content}')
+            #Sending the email to the trash
+            email_server.store(str(email_id+1).encode(), '+X-GM-LABELS', '\\Trash')
+
 
 if __name__ == '__main__':
 
