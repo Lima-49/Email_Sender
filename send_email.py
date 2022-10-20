@@ -37,15 +37,15 @@ def create_email_server(usr, psw):
 
     return email_server
 
-def create_email_body(sender, recipients, subject='Teste de email automatico'):
+def create_email_body(sender, recipients, dates,subject='Teste de email automatico'):
     """
     It creates an email body.
     :param remetente: The email address of the sender
     :param destinatarios: list of email addresses
     :param assunto: Subject of the email
     """
-    email_body = """
-        <p> Envio de email automatico <p>
+    email_body = f"""
+        <p> Envio de email automatico {dates} <p>
     """
     msg = email.message.Message()
     msg['Subject'] = subject
@@ -57,19 +57,26 @@ def create_email_body(sender, recipients, subject='Teste de email automatico'):
 
     return msg
 
-def main(user, psw):
+def run(list_of_recipients, list_of_days):
     """
     It creates an email server, logs in with the user and password, creates an email message
     and sends it
     """
-    email_server = create_email_server(user, psw)
+    try:
+        user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
+        psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-    email_msg = create_email_body(sender=user, recipients=['vitorlima.soares@hotmail.com'])
-    email_server.sendmail(email_msg['From'], [email_msg['To']], email_msg.as_string().encode('utf-8'))
-    print("Email enviado")
+        email_server = create_email_server(user, psw)
+        email_msg = create_email_body(user, list_of_recipients, list_of_days)
 
-if __name__ == '__main__':
-    USER = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
-    PSW = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
+        sender = email_msg['From']
+        recipients = [email_msg['To']]
 
-    main(USER, PSW)
+        email_server.sendmail(sender, recipients, email_msg.as_string().encode('utf-8'))
+        dictionary = {"Status":"Sucesso ao enviar o email"}
+
+    except Exception as email_error:
+        print(email_error)
+        dictionary = {"Status":"Erro ao enviar o email"}
+
+    return dictionary
