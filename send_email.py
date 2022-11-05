@@ -4,9 +4,11 @@ Codigo utilizado para automatizar o envio de emails
 """
 
 import configparser
-import smtplib
 import os
-import email.message
+from flask import Flask, render_template
+from flask_mail import Mail, Message
+
+app = Flask(__name__)
 
 def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'config.txt')):
     """
@@ -24,39 +26,6 @@ def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'con
 
     return str(data)
 
-def create_email_server(usr, psw):
-    """
-    It creates a server that can send emails
-    :return: The server object
-    """
-
-    email_server = smtplib.SMTP('smtp.gmail.com: 587')
-    email_server.ehlo()
-    email_server.starttls()
-    email_server.login(usr, psw)
-
-    return email_server
-
-def create_email_body(sender, recipients, dates,subject='Teste de email automatico'):
-    """
-    It creates an email body.
-    :param remetente: The email address of the sender
-    :param destinatarios: list of email addresses
-    :param assunto: Subject of the email
-    """
-    email_body = f"""
-        <p> Envio de email automatico {dates} <p>
-    """
-    msg = email.message.Message()
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = ", ".join(recipients)
-
-    msg.add_header('Content-Type', 'text/html')
-    msg.set_payload(email_body)
-
-    return msg
-
 def run(list_of_recipients, list_of_days):
     """
     It creates an email server, logs in with the user and password, creates an email message
@@ -66,13 +35,18 @@ def run(list_of_recipients, list_of_days):
         user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
         psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-        email_server = create_email_server(user, psw)
-        email_msg = create_email_body(user, list_of_recipients, list_of_days)
+        app.config['MAIL_SERVER']='smtp.gmail.com'
+        app.config['MAIL_PORT'] = 465
+        app.config['MAIL_USERNAME'] = user
+        app.config['MAIL_PASSWORD'] = psw
+        app.config['MAIL_USE_TLS'] = False
+        app.config['MAIL_USE_SSL'] = True
 
-        sender = email_msg['From']
-        recipients = [email_msg['To']]
+        mail = Mail(app)
 
-        email_server.sendmail(sender, recipients, email_msg.as_string().encode('utf-8'))
+        msg = Message(subject='Email de teste',sender=user, recipients=list_of_recipients)
+        msg.html = render_template('index.html', list=list_of_days)
+        mail.send(msg)
         dictionary = {"Status":"Sucesso ao enviar o email"}
 
     except Exception as email_error:

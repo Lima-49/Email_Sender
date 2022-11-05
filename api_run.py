@@ -4,7 +4,7 @@ ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from send_email import run
 
 app = Flask(__name__)
@@ -36,6 +36,16 @@ def get_parameters():
     result = send_email_to_customer(recipients_list, meeting_day_list)
 
     return result
+
+@app.route('/template', methods=['POST'])
+def show_template():
+
+    content = request.json
+    print("Conteudo ", content)
+
+    meeting_day_list = content['meeting_day']
+
+    return render_template('index.html', list=meeting_day_list)
 
 @app.route('/')
 def root():
