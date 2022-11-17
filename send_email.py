@@ -5,7 +5,7 @@ Codigo utilizado para automatizar o envio de emails
 
 import configparser
 import os
-from flask import Flask, render_template
+from flask import Flask
 from flask_mail import Mail, Message
 
 app = Flask(__name__)
@@ -26,7 +26,7 @@ def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'con
 
     return str(data)
 
-def run(list_of_recipients, list_of_days):
+def run(user_input):
     """
     It creates an email server, logs in with the user and password, creates an email message
     and sends it
@@ -44,8 +44,16 @@ def run(list_of_recipients, list_of_days):
 
         mail = Mail(app)
 
-        msg = Message(subject='Email de teste',sender=user, recipients=list_of_recipients)
-        msg.html = render_template('index.html', list=list_of_days)
+        id_meeting = user_input['id']
+        list_of_recipients = user_input['recipients'][0]
+        list_of_days = user_input['meeting_day']
+        creator_name = user_input['creator_name']
+
+        email_subject = f'Melhor data para a reuniao {id_meeting}'
+        msg = Message(subject=email_subject,sender=user, recipients=[list_of_recipients['email']], charset='utf-8')
+       
+        email_message = f"Olá {list_of_recipients['name']}\nVocê foi convidado para uma reuniao com {creator_name}\n Para escolher a melhor data, clique no link: http://127.0.0.1:5000/template"
+        msg.body = email_message
         mail.send(msg)
         dictionary = {"Status":"Sucesso ao enviar o email"}
 

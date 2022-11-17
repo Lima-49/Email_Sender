@@ -9,14 +9,19 @@ from send_email import run
 
 app = Flask(__name__)
 
-parameter_data = {'recipients': [], 'meeting_day': []}
+parameter_data = {
+    'meeting_day': [],
+    'recipients': [{'name':"nome do participante", 'email':'email do participante'}],
+    'creator_name':"Nome do criador da reuniao",
+    'id':"id da reunião para salvar no banco"
+}
 
-def send_email_to_customer(list_of_recipients, list_of_days):
+def send_email_to_customer(user_input):
     """
     It sends an email to a customer.
     :return: the result of the send_email.run() function.
     """
-    email_status = run(list_of_recipients, list_of_days)
+    email_status = run(user_input)
     return jsonify(email_status)
 
 @app.route('/send_email', methods=['POST'])
@@ -27,25 +32,22 @@ def get_parameters():
     the meeting day
     :return: The result of the function send_email_to_customer
     """
-    content = request.json
-    print("Conteudo ", content)
+    user_input = request.json
+    print("Conteudo ", user_input)
 
-    recipients_list = content['recipients']
-    meeting_day_list = content['meeting_day']
-
-    result = send_email_to_customer(recipients_list, meeting_day_list)
+    result = send_email_to_customer(user_input)
 
     return result
 
-@app.route('/template', methods=['POST'])
+@app.route('/template', methods=['GET'])
 def show_template():
 
-    content = request.json
-    print("Conteudo ", content)
+    """
+  It takes a JSON object, prints it, and then renders a template with the JSON object as a variable
+    :return: The list of meeting days.
+    """
 
-    meeting_day_list = content['meeting_day']
-
-    return render_template('index.html', list=meeting_day_list)
+    return render_template('index.html')
 
 @app.route('/')
 def root():
