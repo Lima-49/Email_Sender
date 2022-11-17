@@ -4,11 +4,10 @@ Codigo utilizado para automatizar o envio de emails
 """
 
 import configparser
+import smtplib
 import os
-from flask import Flask
-from flask_mail import Mail, Message
-
-app = Flask(__name__)
+import email.message
+from flask import render_template
 
 def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'config.txt')):
     """
@@ -26,6 +25,38 @@ def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'con
 
     return str(data)
 
+def create_email_server(usr, psw):
+    """
+    It creates a server that can send emails
+    :return: The server object
+    """
+
+    email_server = smtplib.SMTP('smtp.gmail.com: 587')
+    email_server.ehlo()
+    email_server.starttls()
+    email_server.login(usr, psw)
+
+    return email_server
+
+def create_email_body(sender, recipients, creator_name, subject):
+    """
+    It creates an email body.
+    :param remetente: The email address of the sender
+    :param destinatarios: list of email addresses
+    :param assunto: Subject of the email
+    """
+    email_body = f"Olá {recipients['name']}\nVocê foi convidado para uma reuniao com {creator_name}\n Para escolher a melhor data, clique no link: http://127.0.0.1:5000/template"
+
+    msg = email.message.Message()
+    msg['Subject'] = subject
+    msg['From'] = sender
+    msg['To'] = recipients['email']
+
+    msg.add_header('Content-Type', 'text/html')
+    msg.set_payload(email_body)
+
+    return msg
+
 def run(user_input):
     """
     It creates an email server, logs in with the user and password, creates an email message
@@ -35,26 +66,18 @@ def run(user_input):
         user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
         psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-        app.config['MAIL_SERVER']='smtp.gmail.com'
-        app.config['MAIL_PORT'] = 465
-        app.config['MAIL_USERNAME'] = user
-        app.config['MAIL_PASSWORD'] = psw
-        app.config['MAIL_USE_TLS'] = False
-        app.config['MAIL_USE_SSL'] = True
-
-        mail = Mail(app)
-
         id_meeting = user_input['id']
         list_of_recipients = user_input['recipients'][0]
         list_of_days = user_input['meeting_day']
         creator_name = user_input['creator_name']
 
-        email_subject = f'Melhor data para a reuniao {id_meeting}'
-        msg = Message(subject=email_subject,sender=user, recipients=[list_of_recipients['email']], charset='utf-8')
-       
-        email_message = f"Olá {list_of_recipients['name']}\nVocê foi convidado para uma reuniao com {creator_name}\n Para escolher a melhor data, clique no link: http://127.0.0.1:5000/template"
-        msg.body = email_message
-        mail.send(msg)
+        email_server = create_email_server(user, psw)
+        email_msg = create_email_body(user, list_of_recipients, creator_name, f'Melhor data para a reuniao {id_meeting}')
+
+        sender = email_msg['From']
+        recipients = [email_msg['To']]
+
+        email_server.sendmail(sender, recipients, email_msg.as_string().encode('utf-8'))
         dictionary = {"Status":"Sucesso ao enviar o email"}
 
     except Exception as email_error:
