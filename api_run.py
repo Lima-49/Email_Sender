@@ -5,7 +5,7 @@ para ativar o robo send_email
 """
 
 from flask import Flask, jsonify, request, render_template
-from send_email import run
+from send_email import main_call
 
 app = Flask(__name__)
 
@@ -18,18 +18,19 @@ parameter_data = {
 
 def send_email_to_customer(user_input):
     """
-    It sends an email to a customer.
-    :return: the result of the send_email.run() function.
+It takes in a user input, passes it to a function in another file, and returns the result of that
+    function
+    :param user_input: This is the user input that is passed to the function
+    :return: the jsonified version of the email_status variable.
     """
-    email_status = run(user_input)
+
+    email_status = main_call(user_input)
     return jsonify(email_status)
 
 @app.route('/send_email', methods=['POST'])
 def get_parameters():
     """
-    It takes a list of recipients and a list of meeting days
-    and sends an email to each recipient with
-    the meeting day
+    It receives a JSON object, prints it, and then calls another function that sends an email
     :return: The result of the function send_email_to_customer
     """
     user_input = request.json
@@ -39,15 +40,17 @@ def get_parameters():
 
     return result
 
-@app.route('/template', methods=['GET'])
-def show_template():
-
+@app.route("/external_url")
+def get_best_date():
     """
-  It takes a JSON object, prints it, and then renders a template with the JSON object as a variable
-    :return: The list of meeting days.
+    It receives a list of dates from the frontend, and returns the same list to the frontend
+    :return: A list of dates
     """
 
-    return render_template('index.html')
+    args = request.args
+    date_list = args.get("meeting_day")
+    date_list = date_list.split(',')
+    return render_template('index.html', lista_datas=date_list)
 
 @app.route('/')
 def root():
