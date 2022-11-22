@@ -20,16 +20,17 @@
             <strong>3 (três) datas disponíveis</strong>
           </p>
         </div>
-        <div class="contentDate">
-        
+        <form action="/date_answer", method="post" class="formulario">
+          <div class="contentDate">
             {% for data in lista_datas %}
             <div class="date">
                 <label for="date1">{{ data }}</label>
-                <input id="date1" type="radio" name="datePicker" />
+                <input id="datePicker" type="radio" name="datePicker" value={{ data }}/>
             </div>
             {% endfor %}
-        </div>
-        <button>Enviar</button>
+          </div>
+          <button type="submit">Enviar</button>
+        </form>
       </div>
     </main>
   </body>

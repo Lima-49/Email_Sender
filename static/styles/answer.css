@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    color: black;
+    background-color: white;
+}
+
+.container {
+width: 100vw;
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+flex-direction: column;
+background-color: rgb(32, 32, 32);
+color: white;
+}
+
+.logo_sec {
+    color: rgb(189, 255, 82);
+    font-size: 50px;
+  }

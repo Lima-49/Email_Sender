@@ -52,6 +52,18 @@ def get_best_date():
     date_list = date_list.split(',')
     return render_template('index.html', lista_datas=date_list)
 
+@app.route("/date_answer", methods=['GET', 'POST'])
+def get_date_answer():
+    """
+    It takes the date from the form and returns it.
+    :return: The date
+    """
+    date = request.form['datePicker']
+    date_list = date.split("/")
+    date_list.pop(len(date_list)-1)
+    date = "/".join(date_list)
+    return render_template("answer_screen.html", data=date)
+
 @app.route('/')
 def root():
     """
@@ -60,4 +72,5 @@ def root():
     """
     return parameter_data
 
-app.run()
+if __name__ == "__main__":
+    app.run()

@@ -7,7 +7,6 @@ import configparser
 import smtplib
 import os
 import email.message
-import multiprocessing
 
 def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'config.txt')):
     """
@@ -82,7 +81,6 @@ def main_call(user_input):
         user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
         psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-        processes = []
         id_meeting = user_input['id']
         list_of_recipients = user_input['recipients']
         creator_name = user_input['creator_name']
@@ -93,12 +91,7 @@ def main_call(user_input):
 
         for recipients_dict in list_of_recipients:
             email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
-            proc = multiprocessing.Process(target=run, args=(email_server, email_msg, ))
-            proc.start()
-            processes.append(proc)
-
-        for proc in processes:
-            proc.join()
+            run(email_server, email_msg)
 
         dictionary = {"Status":"Sucesso ao enviar o email"}
 

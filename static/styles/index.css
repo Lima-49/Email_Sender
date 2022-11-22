@@ -40,6 +40,14 @@ body {
   font-weight: bold;
 }
 
+.formulario {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
 .contentDate {
   display: flex;
   width: 70%;
