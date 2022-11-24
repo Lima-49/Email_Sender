@@ -3,7 +3,6 @@ Código utilizado para criar uma api responsavel em ativar o send_email
 ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
-import json
 from flask import Flask, request, render_template
 from send_email import main_call
 
