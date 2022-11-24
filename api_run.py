@@ -3,8 +3,8 @@ Código utilizado para criar uma api responsavel em ativar o send_email
 ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
-
-from flask import Flask, jsonify, request, render_template
+import json
+from flask import Flask, request, render_template
 from send_email import main_call
 
 app = Flask(__name__)
@@ -25,7 +25,7 @@ It takes in a user input, passes it to a function in another file, and returns t
     """
 
     email_status = main_call(user_input)
-    return jsonify(email_status)
+    return email_status
 
 @app.route('/send_email', methods=['POST'])
 def get_parameters():
