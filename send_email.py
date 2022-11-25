@@ -93,9 +93,10 @@ def main_call(user_input):
             email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
             run(email_server, email_msg)
 
-        #dictionary = {"Status":"Sucesso ao enviar o email"}
+        dictionary = {"Status":"Sucesso ao enviar o email"}
 
     except Exception as email_error:
-       # dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
+        dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
         print(email_error)
-    #return jsonify(dictionary)
+
+    return dictionary

@@ -23,8 +23,8 @@ It takes in a user input, passes it to a function in another file, and returns t
     :return: the jsonified version of the email_status variable.
     """
 
-    main_call(user_input)
-    return {"Status":"Sucesso ao enviar o email"}
+    send_email_result = main_call(user_input)
+    return send_email_result
 
 @app.route('/send_email', methods=['POST'])
 def get_parameters():
