@@ -86,7 +86,7 @@ def main_call(user_input):
         creator_name = user_input['creator_name']
         date_list = user_input['meeting_day']
         subject = f'Melhor data para a reuniao {id_meeting}'
-        url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date_list)
+        url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)
         email_server = create_email_server(user, psw)
 
         for recipients_dict in list_of_recipients:
