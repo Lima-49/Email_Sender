@@ -7,7 +7,6 @@ import configparser
 import smtplib
 import os
 import email.message
-from flask import jsonify
 
 def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'config.txt')):
     """
@@ -94,9 +93,9 @@ def main_call(user_input):
             email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
             run(email_server, email_msg)
 
-        dictionary = {"Status":"Sucesso ao enviar o email"}
+        #dictionary = {"Status":"Sucesso ao enviar o email"}
 
     except Exception as email_error:
-        dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
-
-    return jsonify(dictionary)
+       # dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
+        print(email_error)
+    #return jsonify(dictionary)
