@@ -7,7 +7,7 @@ import configparser
 import smtplib
 import os
 import email.message
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 
 app = Flask(__name__)
 
@@ -27,7 +27,7 @@ def get_parameters():
     user_input = request.json
     print("Conteudo ", user_input)
 
-    send_email_to_customer(user_input)
+    return send_email_to_customer(user_input)
 
 @app.route("/external_url")
 def get_best_date():
@@ -155,7 +155,7 @@ def send_email_to_customer(user_input):
         dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
         print(email_error)
 
-    #return dictionary
+    return jsonify(dictionary)
 
 if __name__ == "__main__":
     app.run(debug=True)
