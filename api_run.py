@@ -7,6 +7,7 @@ import configparser
 import smtplib
 import os
 import email.message
+import json
 from flask import Flask, request, render_template, jsonify
 
 app = Flask(__name__)
@@ -155,7 +156,7 @@ def send_email_to_customer(user_input):
         dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
         print(email_error)
 
-    return jsonify(dictionary)
+    return jsonify(json.dumps(dictionary))
 
 if __name__ == "__main__":
     app.run(debug=True)
