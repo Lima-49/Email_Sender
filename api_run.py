@@ -21,14 +21,39 @@ parameter_data = {
 
 @app.route('/send_email', methods=['POST'])
 def get_parameters():
+
     """
     It receives a JSON object, prints it, and then calls another function that sends an email
     :return: The result of the function send_email_to_customer
     """
+
     user_input = request.json
     print("Conteudo ", user_input)
 
-    return send_email_to_customer(user_input)
+    try:
+        user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
+        psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
+
+        id_meeting = user_input['id']
+        list_of_recipients = user_input['recipients']
+        creator_name = user_input['creator_name']
+        date_list = user_input['meeting_day']
+        subject = f'Melhor data para a reuniao {id_meeting}'
+        url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)
+        email_server = create_email_server(user, psw)
+
+        for recipients_dict in list_of_recipients:
+            email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
+            run(email_server, email_msg)
+
+        dictionary = {"Status":"Sucesso ao enviar o email"}
+
+    except Exception as email_error:
+        dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
+        print(email_error)
+
+    dictionary = jsonify(dictionary)
+    return dictionary
 
 @app.route("/external_url")
 def get_best_date():
@@ -126,37 +151,5 @@ It takes an email server and an email message as input, and sends the email mess
 
     email_server.sendmail(sender, recipients, email_msg.as_string().encode('utf-8'))
 
-def send_email_to_customer(user_input):
-    """
-    It takes a dictionary as input, and returns a dictionary as output
-
-    :param user_input: a dictionary with the following keys:
-    :return: A dictionary with the status of the email sending.
-    """
-
-    try:
-        user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
-        psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
-
-        id_meeting = user_input['id']
-        list_of_recipients = user_input['recipients']
-        creator_name = user_input['creator_name']
-        date_list = user_input['meeting_day']
-        subject = f'Melhor data para a reuniao {id_meeting}'
-        url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)
-        email_server = create_email_server(user, psw)
-
-        for recipients_dict in list_of_recipients:
-            email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
-            run(email_server, email_msg)
-
-        dictionary = {"Status":"Sucesso ao enviar o email"}
-
-    except Exception as email_error:
-        dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
-        print(email_error)
-
-    return jsonify(json.dumps(dictionary))
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
