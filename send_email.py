@@ -72,7 +72,7 @@ It takes an email server and an email message as input, and sends the email mess
 
     email_server.sendmail(sender, recipients, email_msg.as_string().encode('utf-8'))
 
-def main_call(user_input):
+def main_call(user_input, url, queue):
     """
     It creates an email server, logs in with the user and password, creates an email message
     and sends it
@@ -81,22 +81,20 @@ def main_call(user_input):
         user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
         psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-        id_meeting = user_input['id']
-        list_of_recipients = user_input['recipients']
+        id_meeting = user_input['id_meeting']
+        recipients_dict = user_input['recipients_dict']
         creator_name = user_input['creator_name']
-        date_list = user_input['meeting_day']
         subject = f'Melhor data para a reuniao {id_meeting}'
-        url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)
         email_server = create_email_server(user, psw)
 
-        for recipients_dict in list_of_recipients:
-            email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
-            run(email_server, email_msg)
+        email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
+        run(email_server, email_msg)
 
-        dictionary = {"Status":"Sucesso ao enviar o email"}
+        user_input["Status"] = "Sucesso"
 
     except Exception as email_error:
-        dictionary = {"Status":"Erro ao enviar o email", "Error Message": email_error}
-        print(email_error)
 
-    return dictionary
+        user_input["Status"] = "Erro ao enviar o email"
+        user_input["Error Message"] = email_error
+
+    queue.put(user_input)
