@@ -11,7 +11,7 @@ def create_fb_database():
     :return: The database object.
     """
 
-    cred = credentials.Certificate(r"FireBase_Project_Key\easyMeeting_teste.json")
+    cred = credentials.Certificate(r"FireBase_Project_Key\easyMeeting_prod.json")
     default_app = firebase_admin.initialize_app(cred)
     database = firestore.client()
 

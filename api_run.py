@@ -3,6 +3,7 @@ Código utilizado para criar uma api responsavel em ativar o send_email
 ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
+from pathlib import Path
 import multiprocessing
 from flask import Flask, request, render_template
 from send_email import main_call
@@ -113,4 +114,5 @@ def consume_queue(id_meeting):
             return item
 
 if __name__ == "__main__":
+    Path(__file__)
     app.run()
