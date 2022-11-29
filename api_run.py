@@ -25,8 +25,8 @@ def get_parameters():
     list_of_recipients = user_input['recipients']
     creator_name = user_input['creator_name']
     date_list = user_input['meeting_day']
-    #url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
-    url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
+    url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
+    #url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
 
     for recipients_dict in list_of_recipients:
 
