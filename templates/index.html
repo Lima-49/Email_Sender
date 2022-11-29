@@ -17,10 +17,10 @@
           </div>
           <p>
             Por favor, escolha <strong>1 (uma)</strong> dentre as
-            <strong>3 (três) datas disponíveis</strong>
+            <strong>3 (três) datas disponíveis para reunião </strong>
           </p>
         </div>
-        <form action="/date_answer", method="post" class="formulario">
+        <form action="/date_answer?id_meeting={{id_meeting}}", method="post" class="formulario">
           <div class="contentDate">
             {% for data in lista_datas %}
             <div class="date">

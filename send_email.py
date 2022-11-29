@@ -90,7 +90,7 @@ def main_call(user_input, url, queue):
         email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
         run(email_server, email_msg)
 
-        user_input["Status"] = "Sucesso"
+        user_input["status"] = "Sucesso"
 
     except Exception as email_error:
 
