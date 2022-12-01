@@ -80,7 +80,7 @@ def get_date_answer():
 
     insert_dict = user_dict
     insert_dict["id"] = id_meeting
-    insert_dict["email"] = {"email_user":user_dict["email"], "date":date}
+    insert_dict["user_date_choosed"] = date
     run_insert(insert_dict)
 
     return render_template("answer_screen.html", data=date)

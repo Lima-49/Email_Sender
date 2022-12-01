@@ -101,13 +101,12 @@ def run_insert(user_input):
     else:
         data_usuario = user_input['email']
         data_fb = collection_return['email']
+        user_date_choosed = user_input["user_date_choosed"]
+        
+        replace_index = data_fb.index(data_usuario)
+        data_fb[replace_index] = {"email":data_usuario, "date":user_date_choosed}
 
-        if isinstance(data_fb, dict):
-            data_escolhida = [data_usuario, data_fb]
-        elif isinstance(data_fb, list):
-            data_escolhida = data_fb + [data_usuario]
-
-        collection_return['email'] = data_escolhida
+        collection_return['email'] = data_fb
         print(collection_return)
 
         insert_fb(collection_return, collection)
