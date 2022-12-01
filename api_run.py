@@ -3,7 +3,6 @@ Código utilizado para criar uma api responsavel em ativar o send_email
 ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
-from pathlib import Path
 import multiprocessing
 from flask import Flask, request, render_template
 from send_email import main_call
@@ -21,24 +20,30 @@ def get_parameters():
     """
 
     user_input = request.json
-
+    creator = user_input['creator']
+    date = user_input['date']
+    email_list = user_input['email_list']
     id_meeting = user_input['id']
-    list_of_recipients = user_input['recipients']
-    creator_name = user_input['creator_name']
-    date_list = user_input['meeting_day']
-    url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
-    #url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
+    meeting_link = user_input['link']
+    status = user_input['status']
+    title = user_input['title']
 
-    for recipients_dict in list_of_recipients:
+    #url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
+    url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date)+"&id_meeting="+id_meeting
+
+    for email in email_list:
 
         user_dict = {
-            "id_meeting":id_meeting,
-            "recipients_dict":recipients_dict,
-            "creator_name":creator_name,
-            "quantidade_participantes": len(list_of_recipients)
+            "creator_name":creator,
+            "date": date,
+            "email": email,
+            "id":id_meeting,
+            "link":meeting_link,
+            "qtdParticipantes": len(email_list),
+            "status":status,
+            "title": title,
         }
 
-        #email_status = main_call(user_dict, url)
         job = multiprocessing.Process(target=main_call, args=(user_dict, url, queue))
         job.start()
 
@@ -73,12 +78,9 @@ def get_date_answer():
     id_meeting = args.get("id_meeting")
     user_dict = consume_queue(id_meeting)
 
-    insert_dict = {
-        "id_meeting":id_meeting,
-        "quantidade_participantes": user_dict['quantidade_participantes'],
-        "datas_escolhidas":{"data":date, 'email_participante':user_dict['recipients_dict']['email']}
-    }
-
+    insert_dict = user_dict
+    insert_dict["id"] = id_meeting
+    insert_dict["email"] = {"email_user":user_dict["email"], "date":date}
     run_insert(insert_dict)
 
     return render_template("answer_screen.html", data=date)
@@ -90,10 +92,14 @@ def root():
     :return: the variable parameter_data.
     """
     parameter_data = {
-        'meeting_day': [],
-        'recipients': [{'name':"nome do participante", 'email':'email do participante'}],
-        'creator_name':"Nome do criador da reuniao",
-        'id':"id da reunião para salvar no banco"
+        "creator":"Nome do criador da reuniao",
+        "date": ["Lista das possveis datas para a reuniao"],
+        "email_list": ["lista de email dos participantes"],
+        "id":"id da reuniao para filtrar no banco",
+        "link":"link para acessar a reuniao",
+        "qtdParticipantes": "Quantidade de participantes para a reuniao",
+        "status":"Status das respostas",
+        "title": "Assunto da reunião que sera enviado no corpo do email",
     }
     return parameter_data
 
@@ -110,9 +116,8 @@ def consume_queue(id_meeting):
 
         if item is None:
             break
-        elif id_meeting in item['id_meeting']:
+        elif id_meeting in item['id']:
             return item
 
 if __name__ == "__main__":
-    Path(__file__)
     app.run()

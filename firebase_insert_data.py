@@ -19,16 +19,23 @@ def create_fb_database():
 
 def find_list_fb(collection, collection_name):
     """
-    It takes a collection and a collection name as input and returns a dictionary of the collection
-    name.
+    It takes a collection and a collection name
+    and returns the document in the collection that has the
+    same name as the collection name
 
-    :param collection: the firestore collection
-    :param collection_name: the name of the collection you want to search
-    :return: A dictionary
+    :param collection: the collection you want to search
+    :param collection_name: The name of the collection you want to search
+    :return: A list of dictionaries.
     """
 
-    res = collection.document(collection_name).get().to_dict()
-    return res
+    collection_list = collection.get()
+    documnt_list = [doc.to_dict() for doc in collection_list]
+    main_document = [doc for doc in documnt_list if doc['id']==collection_name]
+
+    if len(main_document) > 0:
+        return main_document[0]
+    else:
+        return None
 
 def insert_fb(insert_dict, collection):
     """
@@ -37,8 +44,42 @@ def insert_fb(insert_dict, collection):
     :param insert_dict: This is the dictionary that you want to insert into the database
     """
 
-    res = collection.document(insert_dict['id_meeting']).set(insert_dict)
+    res = collection.document(insert_dict['id']).set(insert_dict)
     print(res)
+
+def most_frequent(date_list):
+    """
+    It takes a list of dates, converts it to a set
+    and then returns the most frequent date in the set
+
+    :param date_list: a list of dates in the format of 'YYYY-MM-DD'
+    :return: The most frequent date in the list.
+    """
+    return max(set(date_list), key=date_list.count)
+
+def find_best_date(collection_name, database):
+    """
+    It takes a collection name and a database as input, and returns the most frequent date in the
+    collection
+
+    :param collection_name: the name of the collection
+    :param database: the database object
+    :return: A list of the most frequent dates.
+    """
+
+    collection = database.collection('meetings')
+
+    collection_return = find_list_fb(collection, collection_name)
+
+    qtd_participantes = collection_return['qtdParticipantes']
+    email_answer = collection_return['email']
+
+    chosse_date = "--/--"
+    if len(email_answer) == int(qtd_participantes):
+        date_list = [doc['date'] for doc in email_answer]
+        chosse_date = most_frequent(date_list)
+
+    return chosse_date
 
 def run_insert(user_input):
     """
@@ -50,26 +91,32 @@ def run_insert(user_input):
     """
 
     database, default_app = create_fb_database()
-    collection = database.collection('programmer_details')
-    collection_name = user_input['id_meeting']
+    collection = database.collection('meetings')
+    collection_name = user_input['id']
 
     collection_return = find_list_fb(collection, collection_name)
 
     if collection_return is None:
         insert_fb(user_input,collection)
     else:
-        data_usuario = user_input['datas_escolhidas']
-        data_fb = collection_return['datas_escolhidas']
+        data_usuario = user_input['email']
+        data_fb = collection_return['email']
 
-        if data_usuario['data'] == data_fb['data']:
-            email_participantes = data_fb['email_participante'] + ", " +  data_usuario['email_participante']
-            collection_return['datas_escolhidas']['email_participante'] = email_participantes
-        else:
+        if isinstance(data_fb, dict):
             data_escolhida = [data_usuario, data_fb]
-            collection_return['datas_escolhidas'] = data_escolhida
-            print(collection_return)
+        elif isinstance(data_fb, list):
+            data_escolhida = data_fb + [data_usuario]
+
+        collection_return['email'] = data_escolhida
+        print(collection_return)
 
         insert_fb(collection_return, collection)
+
+    collection_return = find_list_fb(collection, collection_name)
+    choosed_date = find_best_date(collection_name, database)
+
+    collection_return['chooseDate'] = choosed_date
+    insert_fb(user_input, collection)
 
     delete_app(default_app)
     

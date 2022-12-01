@@ -37,22 +37,22 @@ def create_email_server(usr, psw):
 
     return email_server
 
-def create_email_body(sender, recipients, creator_name, subject, site_url):
+def create_email_body(sender, recipient_email, creator_name, subject, site_url):
     """
     It creates an email body.
     :param remetente: The email address of the sender
     :param destinatarios: list of email addresses
     :param assunto: Subject of the email
     """
-    email_body = f"""Olá {recipients['name']}\n
-    Você foi convidado para uma reuniao com {creator_name}\n 
+    email_body = f"""Ola como vai ?\n
+    Voce foi convidado para uma reuniao com {creator_name}\n 
     Para escolher a melhor data, clique no link: {site_url}
     """
 
     msg = email.message.Message()
     msg['Subject'] = subject
     msg['From'] = sender
-    msg['To'] = recipients['email']
+    msg['To'] = recipient_email
 
     msg.add_header('Content-Type', 'text/html')
     msg.set_payload(email_body)
@@ -81,20 +81,19 @@ def main_call(user_input, url, queue):
         user = get_config_data(iten_title='EMAIL_LOGIN', iten='email')
         psw = get_config_data(iten_title='EMAIL_LOGIN', iten='password')
 
-        id_meeting = user_input['id_meeting']
-        recipients_dict = user_input['recipients_dict']
+        recipient_email = user_input['email']
         creator_name = user_input['creator_name']
-        subject = f'Melhor data para a reuniao {id_meeting}'
+        subject = user_input['title']
         email_server = create_email_server(user, psw)
 
-        email_msg = create_email_body(user, recipients_dict, creator_name, subject, url)
+        email_msg = create_email_body(user, recipient_email, creator_name, subject, url)
         run(email_server, email_msg)
 
-        user_input["status"] = "Sucesso"
+        user_input["robot_status"] = "sucesso"
 
     except Exception as email_error:
 
-        user_input["Status"] = "Erro ao enviar o email"
-        user_input["Error Message"] = email_error
+        user_input["robot_status"] = "Erro ao enviar o email"
+        user_input["robot_status_error_msg"] = email_error
 
     queue.put(user_input)

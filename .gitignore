@@ -8,3 +8,5 @@ send_email_old.py
 FireBase_Project_Key
 *.json
 *.ipynb
+dist 
+build
