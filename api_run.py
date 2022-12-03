@@ -26,14 +26,13 @@ def get_parameters():
     user_input = request.json
     creator = user_input['creator']
     date = user_input['date']
-    email_list = user_input['email_list']
+    email_list = user_input['email']
     id_meeting = user_input['id']
     meeting_link = user_input['link']
     status = user_input['status']
     title = user_input['title']
 
     environment_url = get_config_data(iten_title='URL', iten='test')
-    url = environment_url+ "?meeting_day="+",".join(date)+"&id_meeting="+id_meeting
 
     for email in email_list:
 
@@ -47,6 +46,9 @@ def get_parameters():
             "status":status,
             "title": title,
         }
+
+        char_date = ",".join(date)
+        url = environment_url+"?meeting_day="+char_date+"&id_meeting="+id_meeting+"&email="+email
 
         job = multiprocessing.Process(target=main_call, args=(user_dict, url, queue))
         job.start()
@@ -66,8 +68,9 @@ def get_best_date():
     date_list = args.get("meeting_day")
     date_list = date_list.split(',')
     id_meeting = args.get("id_meeting")
+    email_answer = args.get('email')
 
-    return render_template('index.html', lista_datas=date_list, id_meeting=id_meeting)
+    return render_template('index.html',lista_datas=date_list,id_meeting=id_meeting,email=email_answer)
 
 @app.route("/date_answer", methods=['GET', 'POST'])
 def get_date_answer():
@@ -82,7 +85,8 @@ def get_date_answer():
 
     args = request.args
     id_meeting = args.get("id_meeting")
-    user_dict = consume_queue(id_meeting)
+    email_answer = args.get("email")
+    user_dict = consume_queue(id_meeting,email_answer)
 
     insert_dict = user_dict
     insert_dict["id"] = id_meeting
@@ -134,7 +138,7 @@ def get_config_data(iten_title, iten, config_path=relative_to_assets('config.txt
 
     return str(data)
 
-def consume_queue(id_meeting):
+def consume_queue(id_meeting,email_answer):
     """
     It's a function that consumes a queue and returns an item if the id_meeting is in the item
 
@@ -147,7 +151,7 @@ def consume_queue(id_meeting):
 
         if item is None:
             break
-        elif id_meeting in item['id']:
+        elif id_meeting in item['id'] and email_answer in item['email']:
             return item
 
 if __name__ == "__main__":
