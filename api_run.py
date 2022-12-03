@@ -3,6 +3,8 @@ Código utilizado para criar uma api responsavel em ativar o send_email
 ASsim toda a vez q o usuario clicar no botão do app envia uma requisição
 para ativar o robo send_email
 """
+from pathlib import Path
+import configparser
 import multiprocessing
 from flask import Flask, request, render_template
 from send_email import main_call
@@ -11,12 +13,14 @@ from firebase_insert_data import run_insert
 app = Flask(__name__)
 queue = multiprocessing.Queue()
 
+MAIN_PATH = Path(__file__).parent
+
 @app.route('/send_email', methods=['POST'])
 def get_parameters():
-
     """
-    It receives a JSON object, prints it, and then calls another function that sends an email
-    :return: The result of the function send_email_to_customer
+    It gets the parameters from the request
+    and then it starts a process for each email in the email
+    list
     """
 
     user_input = request.json
@@ -28,8 +32,8 @@ def get_parameters():
     status = user_input['status']
     title = user_input['title']
 
-    #url = "https://easy-meeting.azurewebsites.net/external_url?meeting_day="+",".join(date_list)+"&id_meeting="+id_meeting
-    url = "http://127.0.0.1:5000/external_url?meeting_day="+",".join(date)+"&id_meeting="+id_meeting
+    environment_url = get_config_data(iten_title='URL', iten='test')
+    url = environment_url+ "?meeting_day="+",".join(date)+"&id_meeting="+id_meeting
 
     for email in email_list:
 
@@ -52,7 +56,9 @@ def get_parameters():
 @app.route("/external_url")
 def get_best_date():
     """
-    It receives a list of dates from the frontend, and returns the same list to the frontend
+    It receives a list of dates and an id_meeting
+    and returns the index.html template with the list of
+    dates and the id_meeting.
     :return: A list of dates
     """
 
@@ -102,6 +108,31 @@ def root():
         "title": "Assunto da reunião que sera enviado no corpo do email",
     }
     return parameter_data
+
+def relative_to_assets(path: str) -> Path:
+    """
+    It takes a path relative to the assets folder and returns a path relative to the main folder
+    :param path: str
+    :type path: str
+    :return: A path object
+    """
+    return MAIN_PATH / Path(path)
+
+def get_config_data(iten_title, iten, config_path=relative_to_assets('config.txt')):
+    """
+    It reads a config file and returns the value of a given item
+    :param iten_title: The title of the section in the config file
+    :param iten: the name of the parameter you want to get from the config file
+    :param config_path: The path to the config file
+    :return: A string
+    """
+
+    arq_config = configparser.RawConfigParser()
+    arq_config.read(config_path)
+
+    data = arq_config.get(iten_title, iten)
+
+    return str(data)
 
 def consume_queue(id_meeting):
     """

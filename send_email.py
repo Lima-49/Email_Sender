@@ -2,13 +2,23 @@
 """
 Codigo utilizado para automatizar o envio de emails
 """
-
+from pathlib import Path
 import configparser
 import smtplib
-import os
 import email.message
 
-def get_config_data(iten_title, iten, config_path=os.path.join(os.getcwd(), 'config.txt')):
+MAIN_PATH = Path(__file__).parent
+
+def relative_to_assets(path: str) -> Path:
+    """
+    It takes a path relative to the assets folder and returns a path relative to the main folder
+    :param path: str
+    :type path: str
+    :return: A path object
+    """
+    return MAIN_PATH / Path(path)
+
+def get_config_data(iten_title, iten, config_path=relative_to_assets('config.txt')):
     """
     It reads a config file and returns the value of a given item
     :param iten_title: The title of the section in the config file

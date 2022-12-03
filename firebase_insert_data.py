@@ -1,17 +1,30 @@
 """
 Código que será utilizado para adicionar os dados do usuário no banco de dados
 """
-
+from pathlib import Path
 import firebase_admin
 from firebase_admin import credentials, firestore, delete_app
+
+MAIN_PATH = Path(__file__).parent
+JSON_PATH =  MAIN_PATH / Path('./FireBase_Project_Key')
+
+def relative_to_assets(path: str) -> Path:
+    """
+    It takes a path relative to the assets folder and returns a path relative to the main folder
+    :param path: str
+    :type path: str
+    :return: A path object
+    """
+    return JSON_PATH / Path(path)
 
 def create_fb_database():
     """
     It creates a database connection to Firebase.
     :return: The database object.
     """
+    json_path = relative_to_assets('easyMeeting_prod.json')
 
-    cred = credentials.Certificate("easyMeeting_prod.json")
+    cred = credentials.Certificate(json_path)
     default_app = firebase_admin.initialize_app(cred)
     database = firestore.client()
 
@@ -72,7 +85,7 @@ def find_best_date(collection_name, database):
     collection_return = find_list_fb(collection, collection_name)
 
     qtd_participantes = collection_return['qtdParticipantes']
-    email_answer = collection_return['email']
+    email_answer = collection_return['email_date']
 
     chosse_date = "--/--"
     if len(email_answer) == int(qtd_participantes):
@@ -83,11 +96,8 @@ def find_best_date(collection_name, database):
 
 def run_insert(user_input):
     """
-    It takes a user input, checks if it exists in the database
-    if it doesn't, it inserts it into the
-    database.
-
-    :param user_input: a dictionary
+    If the user has already voted, update the vote, otherwise insert a new vote
+    :param user_input: a dictionary with the following keys:
     """
 
     database, default_app = create_fb_database()
@@ -99,14 +109,21 @@ def run_insert(user_input):
     if collection_return is None:
         insert_fb(user_input,collection)
     else:
+        #Pegando o email do usuario que respondeu
         data_usuario = user_input['email']
-        data_fb = collection_return['email']
-        user_date_choosed = user_input["user_date_choosed"]
-        
-        replace_index = data_fb.index(data_usuario)
-        data_fb[replace_index] = {"email":data_usuario, "date":user_date_choosed}
 
-        collection_return['email'] = data_fb
+        #Lista de de dicionarios do banco contendo as datas e emails dos usuariops
+        data_fb = collection_return['email_date']
+
+        #data que o usuario respondeu
+        user_date_choosed = user_input["user_date_choosed"]
+
+        for emai_date_dict in data_fb:
+            if emai_date_dict['email_user'] == data_usuario:
+                emai_date_dict['date'] = user_date_choosed
+                print(emai_date_dict)
+
+        collection_return['email_date'] = data_fb
         print(collection_return)
 
         insert_fb(collection_return, collection)
