@@ -86,9 +86,11 @@ def find_best_date(collection_name, database):
 
     qtd_participantes = collection_return['qtdParticipantes']
     email_answer = collection_return['email_date']
+    date_answer = [date_dr for date_dr in email_answer if date_dr['date'] != '']
 
     chosse_date = "--/--"
-    if len(email_answer) == int(qtd_participantes):
+
+    if len(date_answer) == int(qtd_participantes):
         date_list = [doc['date'] for doc in email_answer]
         chosse_date = most_frequent(date_list)
 
@@ -132,7 +134,7 @@ def run_insert(user_input):
     choosed_date = find_best_date(collection_name, database)
 
     collection_return['chooseDate'] = choosed_date
-    insert_fb(user_input, collection)
+    insert_fb(collection_return, collection)
 
     delete_app(default_app)
     
