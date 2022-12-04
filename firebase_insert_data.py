@@ -22,7 +22,7 @@ def create_fb_database():
     It creates a database connection to Firebase.
     :return: The database object.
     """
-    json_path = relative_to_assets('easyMeeting_teste.json')
+    json_path = relative_to_assets('easyMeeting_prod.json')
 
     cred = credentials.Certificate(json_path)
     default_app = firebase_admin.initialize_app(cred)
