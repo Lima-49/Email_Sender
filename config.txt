@@ -1,0 +1,7 @@
+[EMAIL_LOGIN]
+email = easymeeting.sender@gmail.com
+password = qcqtiekvrmjzghtl
+
+[URL]
+prod = https://easy-meeting.azurewebsites.net/external_url
+test = http://127.0.0.1:5000/external_url
