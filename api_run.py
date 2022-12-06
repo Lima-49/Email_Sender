@@ -7,10 +7,12 @@ from pathlib import Path
 import configparser
 import multiprocessing
 from flask import Flask, request, render_template
+from flask_cors import CORS
 from send_email import main_call
 from firebase_insert_data import run_insert
 
 app = Flask(__name__)
+CORS(app)
 queue = multiprocessing.Queue()
 
 MAIN_PATH = Path(__file__).parent
