@@ -34,7 +34,7 @@ def get_parameters():
     status = user_input['status']
     title = user_input['title']
 
-    environment_url = get_config_data(iten_title='URL', iten='teste')
+    environment_url = get_config_data(iten_title='URL', iten='prod')
 
     for email in email_list:
 
