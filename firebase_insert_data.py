@@ -41,26 +41,27 @@ def find_list_fb(collection, collection_name):
     :return: A list of dictionaries.
     """
 
-    # #Accessing the collection defined by the user
-    # collection_list = collection.get()
+    #Accessing the collection defined by the user
+    docs = collection.stream()
 
-    # #Loop throught the documents transforming to dictionary and saving in a list
-    # documnt_list = [doc.to_dict() for doc in collection_list]
+    #Loop throught the list of documents to get the right id to update the document
+    for doc in docs:
 
-    # #keeping in the main_document list only the document with the id sended by the customer
-    # main_document = [doc for doc in documnt_list if doc['id']==collection_name]
+        #Transform the doc object to dictionary
+        doc_dict = doc.to_dict()
 
-    main_document = collection.document(collection_name).get().to_dict()
-    return main_document
+        #If the id sended by the user is equal to the id at the dictionary
+        if collection_name == doc_dict['id']:
+            return doc_dict, doc.id
 
-def insert_fb(insert_dict, collection):
+def insert_fb(insert_dict, collection, insert_id):
     """
     It takes a dictionary as an argument and inserts it into a Firestore collection
     :param database: The database object that you created in the previous step
     :param insert_dict: This is the dictionary that you want to insert into the database
     """
 
-    res = collection.document(insert_dict['id']).set(insert_dict)
+    res = collection.document(insert_id).set(insert_dict)
     print(res)
 
 def most_frequent(date_list):
@@ -85,7 +86,7 @@ def find_best_date(collection_name, database):
 
     collection = database.collection('meetings')
 
-    collection_return = find_list_fb(collection, str(collection_name))
+    collection_return = find_list_fb(collection, str(collection_name))[0]
 
     qtd_participantes = collection_return['qtdParticipantes']
     email_answer = collection_return['email_date']
@@ -112,38 +113,36 @@ def run_insert(user_input):
         collection = database.collection('meetings')
         collection_name = user_input['id']
 
-        collection_return = find_list_fb(collection, collection_name)
+        collection_return, firebase_id = find_list_fb(collection, collection_name)
 
-        if collection_return is None:
-            insert_fb(user_input,collection)
-        else:
-            #Pegando o email do usuario que respondeu
-            data_usuario = user_input['email']
+        #Pegando o email do usuario que respondeu
+        data_usuario = user_input['email']
 
-            #Lista de de dicionarios do banco contendo as datas e emails dos usuariops
-            data_fb = collection_return['email_date']
+        #Lista de de dicionarios do banco contendo as datas e emails dos usuariops
+        data_fb = collection_return['email_date']
 
-            #data que o usuario respondeu
-            user_date_choosed = user_input["user_date_choosed"]
+        #data que o usuario respondeu
+        user_date_choosed = user_input["user_date_choosed"]
 
-            for emai_date_dict in data_fb:
-                if emai_date_dict['email_user'] == data_usuario:
-                    emai_date_dict['date'] = user_date_choosed
-                    print(emai_date_dict)
+        for emai_date_dict in data_fb:
+            if emai_date_dict['email_user'] == data_usuario:
+                emai_date_dict['date'] = user_date_choosed
+                print(emai_date_dict)
 
-            collection_return['email_date'] = data_fb
-            print(collection_return)
+        collection_return['email_date'] = data_fb
+        print(collection_return)
 
-            insert_fb(collection_return, collection)
+        insert_fb(collection_return, collection, firebase_id)
 
-        collection_return = find_list_fb(collection, collection_name)
+        collection_return, firebase_id = find_list_fb(collection, collection_name)
         choosed_date, status = find_best_date(collection_name, database)
 
         collection_return['chooseDate'] = choosed_date
         collection_return['status'] = status
-        insert_fb(collection_return, collection)
+        insert_fb(collection_return, collection, firebase_id)
 
         delete_app(default_app)
+
     except Exception as insert_error:
         print(insert_error)
         delete_app(default_app)
