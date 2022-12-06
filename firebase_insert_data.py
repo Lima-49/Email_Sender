@@ -41,14 +41,17 @@ def find_list_fb(collection, collection_name):
     :return: A list of dictionaries.
     """
 
-    collection_list = collection.get()
-    documnt_list = [doc.to_dict() for doc in collection_list]
-    main_document = [doc for doc in documnt_list if doc['id']==collection_name]
+    # #Accessing the collection defined by the user
+    # collection_list = collection.get()
 
-    if len(main_document) > 0:
-        return main_document[0]
-    else:
-        return None
+    # #Loop throught the documents transforming to dictionary and saving in a list
+    # documnt_list = [doc.to_dict() for doc in collection_list]
+
+    # #keeping in the main_document list only the document with the id sended by the customer
+    # main_document = [doc for doc in documnt_list if doc['id']==collection_name]
+
+    main_document = collection.document(collection_name).get().to_dict()
+    return main_document
 
 def insert_fb(insert_dict, collection):
     """
@@ -82,19 +85,21 @@ def find_best_date(collection_name, database):
 
     collection = database.collection('meetings')
 
-    collection_return = find_list_fb(collection, collection_name)
+    collection_return = find_list_fb(collection, str(collection_name))
 
     qtd_participantes = collection_return['qtdParticipantes']
     email_answer = collection_return['email_date']
     date_answer = [date_dr for date_dr in email_answer if date_dr['date'] != '']
 
     chosse_date = "--/--"
+    status = 'Pendente'
 
     if len(date_answer) == int(qtd_participantes):
         date_list = [doc['date'] for doc in email_answer]
         chosse_date = most_frequent(date_list)
+        status = 'Concluido'
 
-    return chosse_date
+    return chosse_date, status
 
 def run_insert(user_input):
     """
@@ -102,39 +107,44 @@ def run_insert(user_input):
     :param user_input: a dictionary with the following keys:
     """
 
-    database, default_app = create_fb_database()
-    collection = database.collection('meetings')
-    collection_name = user_input['id']
+    try:
+        database, default_app = create_fb_database()
+        collection = database.collection('meetings')
+        collection_name = user_input['id']
 
-    collection_return = find_list_fb(collection, collection_name)
+        collection_return = find_list_fb(collection, collection_name)
 
-    if collection_return is None:
-        insert_fb(user_input,collection)
-    else:
-        #Pegando o email do usuario que respondeu
-        data_usuario = user_input['email']
+        if collection_return is None:
+            insert_fb(user_input,collection)
+        else:
+            #Pegando o email do usuario que respondeu
+            data_usuario = user_input['email']
 
-        #Lista de de dicionarios do banco contendo as datas e emails dos usuariops
-        data_fb = collection_return['email_date']
+            #Lista de de dicionarios do banco contendo as datas e emails dos usuariops
+            data_fb = collection_return['email_date']
 
-        #data que o usuario respondeu
-        user_date_choosed = user_input["user_date_choosed"]
+            #data que o usuario respondeu
+            user_date_choosed = user_input["user_date_choosed"]
 
-        for emai_date_dict in data_fb:
-            if emai_date_dict['email_user'] == data_usuario:
-                emai_date_dict['date'] = user_date_choosed
-                print(emai_date_dict)
+            for emai_date_dict in data_fb:
+                if emai_date_dict['email_user'] == data_usuario:
+                    emai_date_dict['date'] = user_date_choosed
+                    print(emai_date_dict)
 
-        collection_return['email_date'] = data_fb
-        print(collection_return)
+            collection_return['email_date'] = data_fb
+            print(collection_return)
 
+            insert_fb(collection_return, collection)
+
+        collection_return = find_list_fb(collection, collection_name)
+        choosed_date, status = find_best_date(collection_name, database)
+
+        collection_return['chooseDate'] = choosed_date
+        collection_return['status'] = status
         insert_fb(collection_return, collection)
 
-    collection_return = find_list_fb(collection, collection_name)
-    choosed_date = find_best_date(collection_name, database)
-
-    collection_return['chooseDate'] = choosed_date
-    insert_fb(collection_return, collection)
-
-    delete_app(default_app)
+        delete_app(default_app)
+    except Exception as insert_error:
+        print(insert_error)
+        delete_app(default_app)
     
